@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, signal, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, signal, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -43,36 +43,36 @@ export interface RebusPuzzle {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none pb-12">
+    <div class="min-h-dvh bg-zinc-950 text-zinc-100 flex flex-col font-sans select-none pb-12">
       
       <!-- Top Header Bar -->
-      <header class="w-full bg-zinc-900/90 border-b border-zinc-800/80 sticky top-0 z-50 px-4 py-3 backdrop-blur-md shadow-md">
-        <div class="max-w-md mx-auto flex items-center justify-between">
-          <div class="flex items-center space-x-3">
-            <div class="w-10 h-10 bg-gradient-to-tr from-amber-500 via-orange-600 to-red-600 rounded-xl flex items-center justify-center font-black text-white text-xl shadow-md shadow-red-500/20">
+      <header class="w-full bg-zinc-900/90 border-b border-zinc-800/80 sticky top-0 z-50 px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-md shadow-md">
+        <div class="max-w-md mx-auto flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div class="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-tr from-amber-500 via-orange-600 to-red-600 rounded-xl flex items-center justify-center font-black text-white text-lg sm:text-xl shadow-md shadow-red-500/20 shrink-0">
               🧩
             </div>
-            <div>
-              <h1 class="font-black text-base tracking-tight bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
+            <div class="min-w-0">
+              <h1 class="font-black text-sm sm:text-base tracking-tight bg-gradient-to-r from-amber-400 via-orange-500 to-red-500 bg-clip-text text-transparent">
                 REBUS BESTEMMIE
               </h1>
-              <p class="text-[10px] text-zinc-400 font-medium uppercase tracking-widest">
+              <p class="text-[9px] sm:text-[10px] text-zinc-400 font-medium uppercase tracking-widest truncate">
                 Deità, Santi e Concordanza Grammaticale
               </p>
             </div>
           </div>
 
           <!-- Time, Streak & Score Badges -->
-          <div class="flex items-center space-x-2">
-            <div class="bg-zinc-800/90 border border-zinc-700/60 px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-sm text-xs font-mono" title="Tempo di gioco">
+          <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            <div class="bg-zinc-800/90 border border-zinc-700/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex items-center gap-1 shadow-sm text-[11px] sm:text-xs font-mono" title="Tempo di gioco">
               <span class="text-sky-400">⏱️</span>
               <span class="font-bold text-zinc-200">{{ formattedTime() }}</span>
             </div>
-            <div class="bg-zinc-800/90 border border-zinc-700/60 px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-sm text-xs" title="Serie di risposte corrette">
+            <div class="bg-zinc-800/90 border border-zinc-700/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex items-center gap-1 shadow-sm text-[11px] sm:text-xs" title="Serie di risposte corrette">
               <span class="text-amber-400 animate-pulse">🔥</span>
               <span class="font-bold text-zinc-200">{{ streak() }}</span>
             </div>
-            <div class="bg-zinc-800/90 border border-zinc-700/60 px-2.5 py-1 rounded-full flex items-center space-x-1 shadow-sm text-xs" title="Punteggio Totale">
+            <div class="bg-zinc-800/90 border border-zinc-700/60 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full flex items-center gap-1 shadow-sm text-[11px] sm:text-xs" title="Punteggio Totale">
               <span class="text-emerald-400">🏆</span>
               <span class="font-bold text-zinc-200">{{ score() }}</span>
             </div>
@@ -80,25 +80,14 @@ export interface RebusPuzzle {
         </div>
       </header>
 
-      <!-- Hidden YouTube Iframe Player for Error Sound Effect -->
-      <div class="hidden">
-        <iframe 
-          id="yt-error-sound" 
-          width="200" 
-          height="200" 
-          src="https://www.youtube.com/embed/TajAzT3CVJc?enablejsapi=1&autoplay=0" 
-          allow="autoplay">
-        </iframe>
-      </div>
-
       <!-- Main Game Container -->
-      <main class="flex-1 max-w-md w-full mx-auto px-4 py-6 flex flex-col justify-between space-y-5">
+      <main class="flex-1 max-w-md w-full mx-auto px-3 sm:px-4 py-4 sm:py-6 flex flex-col justify-between space-y-4 sm:space-y-5">
 
         @if (currentPuzzle(); as puzzle) {
           
           <!-- Puzzle Header Info -->
-          <div class="flex items-center justify-between text-xs px-1">
-            <div class="flex items-center space-x-2">
+          <div class="flex items-center justify-between flex-wrap gap-2 text-xs px-1">
+            <div class="flex items-center gap-2">
               <span class="text-zinc-500 font-bold tracking-wider">REBUS #{{ puzzle.id }}</span>
               <span [class]="getDifficultyStyle(puzzle.difficulty) + ' px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider'">
                 {{ puzzle.difficulty }}
@@ -111,7 +100,7 @@ export interface RebusPuzzle {
           </div>
 
           <!-- Strict 2-Card Visual Rebus Board -->
-          <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-3xl p-4 shadow-2xl backdrop-blur-sm relative overflow-hidden flex flex-col items-center justify-center space-y-4">
+          <div class="bg-zinc-900/90 border border-zinc-800/90 rounded-3xl p-3 sm:p-4 shadow-2xl backdrop-blur-sm relative overflow-hidden flex flex-col items-center justify-center space-y-4">
             
             <!-- Solved Celebration Overlay -->
             @if (isSolved()) {
@@ -121,10 +110,10 @@ export interface RebusPuzzle {
             }
 
             <!-- 2 Vector Image Cards Side-by-Side -->
-            <div class="w-full flex items-center justify-center space-x-2 sm:space-x-4 py-2">
+            <div class="w-full flex items-center justify-center gap-1 sm:gap-4 py-2">
               
               <!-- Card 1 -->
-              <div class="relative group w-36 sm:w-44 h-48 bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 rounded-2xl border-2 border-zinc-700/80 p-3 flex flex-col items-center justify-center shadow-xl transition-all duration-300 hover:border-amber-500/50">
+              <div class="relative group w-[42%] max-w-44 aspect-[3/4] bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 rounded-2xl border-2 border-zinc-700/80 p-3 flex flex-col items-center justify-center shadow-xl transition-all duration-300 hover:border-amber-500/50">
                 <ng-container *ngTemplateOutlet="svgTemplate; context: { type: puzzle.cards[0].type, badge: puzzle.cards[0].operatorBadge }"></ng-container>
 
                 @if (puzzle.cards[0].operatorBadge) {
@@ -135,12 +124,12 @@ export interface RebusPuzzle {
               </div>
 
               <!-- Rebus Plus Operator Sign -->
-              <div class="text-amber-500 font-black text-3xl select-none px-1">
+              <div class="text-amber-500 font-black text-2xl sm:text-3xl select-none px-0.5 sm:px-1">
                 +
               </div>
 
               <!-- Card 2 -->
-              <div class="relative group w-36 sm:w-44 h-48 bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 rounded-2xl border-2 border-zinc-700/80 p-3 flex flex-col items-center justify-center shadow-xl transition-all duration-300 hover:border-amber-500/50">
+              <div class="relative group w-[42%] max-w-44 aspect-[3/4] bg-gradient-to-b from-zinc-900 via-zinc-900/90 to-zinc-950 rounded-2xl border-2 border-zinc-700/80 p-3 flex flex-col items-center justify-center shadow-xl transition-all duration-300 hover:border-amber-500/50">
                 <ng-container *ngTemplateOutlet="svgTemplate; context: { type: puzzle.cards[1].type, badge: puzzle.cards[1].operatorBadge }"></ng-container>
 
                 @if (puzzle.cards[1].operatorBadge) {
@@ -155,10 +144,10 @@ export interface RebusPuzzle {
 
           <!-- Optional Toggleable Structural Hint Box -->
           @if (showHint()) {
-            <div class="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-3 text-xs text-amber-200/90 flex items-center justify-between animate-fade-in shadow-inner">
-              <div class="flex items-center space-x-2">
-                <span class="text-base">💡</span>
-                <span class="font-mono text-sm tracking-widest font-bold text-amber-300">
+            <div class="bg-amber-950/40 border border-amber-500/40 rounded-2xl p-3 text-xs text-amber-200/90 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 animate-fade-in shadow-inner">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="text-base shrink-0">💡</span>
+                <span class="font-mono text-xs sm:text-sm tracking-wider sm:tracking-widest font-bold text-amber-300 break-words">
                   {{ puzzle.maskedOutline }}
                 </span>
               </div>
@@ -191,7 +180,7 @@ export interface RebusPuzzle {
               <div class="flex items-center justify-between text-xs px-1">
                 <button 
                   (click)="toggleHint()"
-                  class="text-amber-400 hover:text-amber-300 font-medium flex items-center space-x-1.5 transition-colors">
+                  class="text-amber-400 hover:text-amber-300 font-medium flex items-center gap-1.5 transition-colors">
                   <span>{{ showHint() ? 'Nascondi Indizio' : '🔍 Mostra Indizio' }}</span>
                 </button>
 
@@ -203,12 +192,12 @@ export interface RebusPuzzle {
               </div>
             } @else {
               <!-- Solved Celebration Banner -->
-              <div class="bg-emerald-950/60 border border-emerald-500/50 rounded-2xl p-4 text-center space-y-3 shadow-xl animate-fade-in">
-                <div class="text-emerald-400 font-black text-lg flex items-center justify-center space-x-2">
+              <div class="bg-emerald-950/60 border border-emerald-500/50 rounded-2xl p-3 sm:p-4 text-center space-y-3 shadow-xl animate-fade-in">
+                <div class="text-emerald-400 font-black text-lg flex items-center justify-center gap-2">
                   <span>🎯</span>
                   <span>ESATTO!</span>
                 </div>
-                <div class="text-zinc-100 font-mono text-base bg-zinc-950/90 py-2.5 px-3 rounded-xl border border-emerald-500/30 uppercase font-bold tracking-widest">
+                <div class="text-zinc-100 font-mono text-sm sm:text-base bg-zinc-950/90 py-2.5 px-3 rounded-xl border border-emerald-500/30 uppercase font-bold tracking-widest break-words">
                   {{ puzzle.answer }}
                 </div>
                 <button 
@@ -231,7 +220,7 @@ export interface RebusPuzzle {
           <div class="pt-1">
             <button 
               (click)="nextPuzzle()"
-              class="w-full py-3.5 bg-zinc-900 border border-zinc-700/80 hover:bg-zinc-800 text-zinc-200 font-bold rounded-2xl transition-all shadow-md active:scale-98 flex items-center justify-center space-x-2 text-sm">
+              class="w-full py-3.5 bg-zinc-900 border border-zinc-700/80 hover:bg-zinc-800 text-zinc-200 font-bold rounded-2xl transition-all shadow-md active:scale-98 flex items-center justify-center gap-2 text-sm">
               <span>🔄 Genera Nuovo Rebus Casuale</span>
             </button>
           </div>
@@ -250,7 +239,7 @@ export interface RebusPuzzle {
         @switch (type) {
           @case ('pope') {
             <!-- Il Papa (Papal Tiara & Keys) -->
-            <svg class="w-24 h-24 text-amber-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 30 75 L 70 75 L 65 58 L 35 58 Z" fill="#FBBF24" />
               <path d="M 35 58 L 65 58 L 60 42 L 40 42 Z" fill="#F59E0B" />
               <path d="M 40 42 L 60 42 L 54 26 L 46 26 Z" fill="#D97706" />
@@ -261,14 +250,14 @@ export interface RebusPuzzle {
           }
           @case ('saint') {
             <!-- Saint with Halo -->
-            <svg class="w-24 h-24 text-amber-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="38" r="24" fill="none" stroke="#FBBF24" stroke-width="4" stroke-dasharray="6 2" />
               <circle cx="50" cy="42" r="14" fill="#FED7AA" />
               <path d="M 30 85 Q 30 58 50 58 Q 70 58 70 85 Z" fill="#0284C7" />
             </svg>
           }
           @case ('pig') {
-            <svg class="w-24 h-24 text-pink-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-pink-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="55" rx="35" ry="28" fill="#F472B6" />
               <circle cx="50" cy="62" r="14" fill="#F43F5E" />
               <circle cx="44" cy="62" r="3" fill="#9F1239" />
@@ -281,7 +270,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('divine') {
-            <svg class="w-24 h-24 text-amber-300 drop-shadow-lg" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-300 drop-shadow-lg" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="50" r="16" fill="#FBBF24" />
               <g stroke="#F59E0B" stroke-width="3" stroke-linecap="round">
                 <line x1="50" y1="10" x2="50" y2="26" />
@@ -297,7 +286,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('dog') {
-            <svg class="w-24 h-24 text-amber-600 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-600 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 35 40 Q 30 20 45 25 Q 60 20 55 40 Z" fill="#D97706" />
               <ellipse cx="45" cy="50" rx="18" ry="22" fill="#B45309" />
               <circle cx="36" cy="38" r="3" fill="#1E293B" />
@@ -309,7 +298,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('executioner') {
-            <svg class="w-24 h-24 text-zinc-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-zinc-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 30 75 Q 30 35 50 35 Q 70 35 70 75 Z" fill="#27272A" />
               <circle cx="43" cy="52" r="3" fill="#EF4444" />
               <circle cx="57" cy="52" r="3" fill="#EF4444" />
@@ -318,7 +307,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('madonna') {
-            <svg class="w-24 h-24 text-sky-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-sky-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="45" r="32" fill="none" stroke="#FBBF24" stroke-width="4" />
               <path d="M 25 80 Q 25 35 50 35 Q 75 35 75 80 Z" fill="#0284C7" />
               <ellipse cx="50" cy="52" rx="12" ry="15" fill="#FED7AA" />
@@ -326,7 +315,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('wolf') {
-            <svg class="w-24 h-24 text-slate-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-slate-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 30 80 L 40 55 L 30 45 L 45 35 L 55 18 L 60 30 L 70 42 L 60 60 L 65 80 Z" fill="#475569" />
               <polygon points="55,18 48,28 58,28" fill="#334155" />
               <circle cx="50" cy="30" r="2" fill="#F59E0B" />
@@ -334,7 +323,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('ogre') {
-            <svg class="w-24 h-24 text-emerald-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-emerald-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="52" rx="28" ry="26" fill="#059669" />
               <circle cx="38" cy="46" r="6" fill="#FEF08A" />
               <circle cx="62" cy="46" r="6" fill="#FEF08A" />
@@ -346,7 +335,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('snake') {
-            <svg class="w-24 h-24 text-emerald-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-emerald-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 50 20 Q 75 20 70 45 Q 65 60 50 65 Q 35 70 45 85 Q 55 90 70 85" fill="none" stroke="#10B981" stroke-width="12" stroke-linecap="round" />
               <ellipse cx="50" cy="22" rx="14" ry="10" fill="#047857" />
               <circle cx="44" cy="20" r="2" fill="#FEF08A" />
@@ -354,7 +343,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('toad') {
-            <svg class="w-24 h-24 text-lime-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-lime-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="60" rx="32" ry="24" fill="#65A30D" />
               <circle cx="35" cy="38" r="10" fill="#84CC16" />
               <circle cx="65" cy="38" r="10" fill="#84CC16" />
@@ -364,7 +353,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('dragon') {
-            <svg class="w-24 h-24 text-red-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-red-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 25 70 Q 15 40 45 30 L 70 20 L 60 40 L 75 55 L 50 75 Z" fill="#DC2626" />
               <polygon points="45,30 35,15 55,25" fill="#B91C1C" />
               <polygon points="60,40 75,28 68,48" fill="#B91C1C" />
@@ -373,7 +362,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('goat') {
-            <svg class="w-24 h-24 text-stone-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-stone-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <polygon points="50,30 30,70 70,70" fill="#E7E5E4" />
               <path d="M 35 32 Q 15 15 25 5 Q 40 10 40 30" fill="none" stroke="#A8A29E" stroke-width="5" />
               <path d="M 65 32 Q 85 15 75 5 Q 60 10 60 30" fill="none" stroke="#A8A29E" stroke-width="5" />
@@ -383,7 +372,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('cow') {
-            <svg class="w-24 h-24 text-zinc-100 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-zinc-100 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="55" rx="30" ry="25" fill="#F4F4F5" />
               <ellipse cx="50" cy="65" rx="16" ry="12" fill="#F472B6" />
               <circle cx="35" cy="45" r="4" fill="#18181B" />
@@ -395,7 +384,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('donkey') {
-            <svg class="w-24 h-24 text-neutral-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-neutral-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="55" rx="22" ry="28" fill="#A3A3A3" />
               <path d="M 38 40 L 25 5 L 42 30 Z" fill="#737373" />
               <path d="M 62 40 L 75 5 L 58 30 Z" fill="#737373" />
@@ -405,14 +394,14 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('crow') {
-            <svg class="w-24 h-24 text-slate-800 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-slate-800 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 30 75 Q 30 40 50 35 Q 75 40 70 75 Z" fill="#0F172A" />
               <polygon points="50,45 80,52 52,60" fill="#334155" />
               <circle cx="42" cy="45" r="3" fill="#F59E0B" />
             </svg>
           }
           @case ('pirate') {
-            <svg class="w-24 h-24 text-red-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-red-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="52" r="24" fill="#FED7AA" />
               <path d="M 30 40 L 70 55" stroke="#18181B" stroke-width="3" />
               <circle cx="42" cy="48" r="6" fill="#18181B" />
@@ -421,7 +410,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('shark') {
-            <svg class="w-24 h-24 text-cyan-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-cyan-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 15 60 Q 40 30 85 45 Q 60 70 15 60 Z" fill="#06B6D4" />
               <polygon points="45,40 55,15 65,42" fill="#0891B2" />
               <circle cx="72" cy="46" r="2.5" fill="#155E75" />
@@ -430,7 +419,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('vampire') {
-            <svg class="w-24 h-24 text-purple-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-purple-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 20 80 L 35 45 L 50 35 L 65 45 L 80 80 Z" fill="#581C87" />
               <ellipse cx="50" cy="48" rx="16" ry="18" fill="#F3E8FF" />
               <path d="M 34 40 Q 50 48 66 40 Q 50 30 34 40 Z" fill="#1E1B4B" />
@@ -441,7 +430,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('devil') {
-            <svg class="w-24 h-24 text-red-600 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-red-600 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="55" rx="25" ry="25" fill="#EF4444" />
               <path d="M 30 40 Q 20 15 38 28 Z" fill="#991B1B" />
               <path d="M 70 40 Q 80 15 62 28 Z" fill="#991B1B" />
@@ -451,7 +440,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('thief') {
-            <svg class="w-24 h-24 text-amber-200 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-200 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="55" rx="22" ry="24" fill="#FDE68A" />
               <rect x="25" y="44" width="50" height="14" fill="#18181B" rx="4" />
               <circle cx="38" cy="51" r="3" fill="#FFFFFF" />
@@ -460,27 +449,27 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('cross') {
-            <svg class="w-24 h-24 text-amber-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <rect x="42" y="15" width="16" height="70" fill="#D97706" rx="3" />
               <rect x="20" y="32" width="60" height="16" fill="#D97706" rx="3" />
               <rect x="45" y="18" width="10" height="64" fill="#FBBF24" rx="2" />
             </svg>
           }
           @case ('host') {
-            <svg class="w-24 h-24 text-amber-100 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-100 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="50" r="34" fill="#FEF3C7" stroke="#FCD34D" stroke-width="4" />
               <path d="M 50 28 L 50 72 M 32 44 L 68 44" stroke="#D97706" stroke-width="3" stroke-linecap="round" />
             </svg>
           }
           @case ('worm') {
-            <svg class="w-24 h-24 text-rose-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-rose-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 20 60 Q 35 30 50 60 Q 65 90 80 60" fill="none" stroke="#FB7185" stroke-width="10" stroke-linecap="round" />
               <circle cx="80" cy="60" r="7" fill="#E11D48" />
               <circle cx="82" cy="58" r="1.5" fill="#FFFFFF" />
             </svg>
           }
           @case ('monkey') {
-            <svg class="w-24 h-24 text-amber-800 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-amber-800 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="50" r="26" fill="#78350F" />
               <ellipse cx="50" cy="58" rx="16" ry="12" fill="#FDE68A" />
               <circle cx="30" cy="45" r="8" fill="#78350F" />
@@ -492,7 +481,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('skunk') {
-            <svg class="w-24 h-24 text-zinc-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-zinc-300 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="50" cy="55" rx="25" ry="22" fill="#18181B" />
               <path d="M 50 33 Q 35 20 50 75" fill="none" stroke="#F4F4F5" stroke-width="8" stroke-linecap="round" />
               <circle cx="40" cy="48" r="3" fill="#FFFFFF" />
@@ -500,7 +489,7 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('skull') {
-            <svg class="w-24 h-24 text-zinc-200 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-zinc-200 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 30 45 C 30 25 70 25 70 45 C 70 58 60 60 60 70 L 40 70 C 40 60 30 58 30 45 Z" fill="#E4E4E7" />
               <circle cx="42" cy="45" r="6" fill="#18181B" />
               <circle cx="58" cy="45" r="6" fill="#18181B" />
@@ -511,27 +500,27 @@ export interface RebusPuzzle {
             </svg>
           }
           @case ('fire') {
-            <svg class="w-24 h-24 text-orange-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-orange-500 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 50 15 Q 70 40 65 60 Q 80 50 75 75 Q 65 90 50 90 Q 25 90 25 70 Q 25 45 50 15 Z" fill="#F97316" />
               <path d="M 50 40 Q 60 55 58 70 Q 65 65 60 80 Q 52 88 48 88 Q 35 88 38 72 Q 40 55 50 40 Z" fill="#FACC15" />
             </svg>
           }
           @case ('bat') {
-            <svg class="w-24 h-24 text-zinc-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-zinc-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <path d="M 50 45 Q 35 25 15 35 Q 25 55 35 55 Q 42 65 50 55 Q 58 65 65 55 Q 75 55 85 35 Q 65 25 50 45 Z" fill="#27272A" />
               <circle cx="46" cy="45" r="2" fill="#EF4444" />
               <circle cx="54" cy="45" r="2" fill="#EF4444" />
             </svg>
           }
           @case ('sewer') {
-            <svg class="w-24 h-24 text-emerald-700 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-emerald-700 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <circle cx="50" cy="50" r="32" fill="#047857" stroke="#065F46" stroke-width="4" />
               <circle cx="50" cy="50" r="24" fill="#022C22" />
               <path d="M 30 50 L 70 50 M 50 30 L 50 70" stroke="#047857" stroke-width="4" />
             </svg>
           }
           @case ('rat') {
-            <svg class="w-24 h-24 text-stone-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
+            <svg class="h-full w-full text-stone-400 drop-shadow-md" viewBox="0 0 100 100" fill="currentColor">
               <ellipse cx="45" cy="55" rx="25" ry="18" fill="#78716C" />
               <path d="M 65 55 L 85 58 L 68 62 Z" fill="#57534E" />
               <circle cx="62" cy="52" r="2" fill="#EF4444" />
@@ -553,7 +542,7 @@ export interface RebusPuzzle {
     }
   `]
 })
-export class App implements OnInit {
+export class App implements OnInit, OnDestroy {
 
   // Subject dictionary featuring weighted selection and strict gender markers ('m' or 'f')
   private readonly SACRED_SUBJECTS: ConceptItem[] = [
@@ -649,31 +638,26 @@ export class App implements OnInit {
 
   private puzzleCounter = 1;
 
-  // Sound effect player for incorrect answers using the YouTube iframe API
+  // Sound effect player for incorrect answers (local asset: public/assets/fahhh.mp3)
+  private readonly faahAudio = new Audio('assets/fahhh.mp3');
+
   private playFaahSound() {
-    try {
-      const iframe = document.getElementById('yt-error-sound') as HTMLIFrameElement;
-      if (iframe && iframe.contentWindow) {
-        iframe.contentWindow.postMessage(JSON.stringify({
-          event: 'command',
-          func: 'seekTo',
-          args: [0, true]
-        }), '*');
-        iframe.contentWindow.postMessage(JSON.stringify({
-          event: 'command',
-          func: 'playVideo',
-          args: []
-        }), '*');
-      }
-    } catch {
-      // Fallback if cross-origin policy restricts direct postMessage
-    }
+    this.faahAudio.currentTime = 0;
+    this.faahAudio.play().catch(() => {
+      // Fallback if the browser blocks autoplay before a user gesture
+    });
   }
 
   ngOnInit() {
     this.loadStats();
     this.startTimer();
     this.nextPuzzle();
+  }
+
+  ngOnDestroy() {
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+    }
   }
 
   private startTimer() {

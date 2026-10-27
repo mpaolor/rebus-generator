@@ -1,0 +1,4 @@
+@import "tailwindcss";
+
+/* Forza la scansione dei template Angular (Tailwind v4 + Angular CLI) */
+@source "./";

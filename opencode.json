@@ -1,0 +1,23 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "model": "local-llm/qwen3.8-flash-next-iq3_xxs",
+    "provider": {
+        "local-llm": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "LLM locale",
+            "options": {
+                "baseURL": "http://127.0.0.1:8080/v1",
+                "apiKey": "local"
+            },
+            "models": {
+                "qwen3.8-flash-next-iq3_xxs": {
+                    "name": "Qwen locale",
+                    "limit": {
+                        "context": 128000,
+                        "output": 16384
+                    }
+                }
+            }
+        }
+    }
+}
